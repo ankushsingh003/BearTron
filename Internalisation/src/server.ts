@@ -14,7 +14,7 @@ app.use(express.static(__dirname + '/public'));
 const engine = new MatchingEngine();
 
 // Health check
-app.get('/', (req, res) => {
+app.get('/api/status', (req, res) => {
     res.json({ status: 'Internalization Platform Online' });
 });
 
