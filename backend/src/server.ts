@@ -7,6 +7,7 @@ dotenv.config();
 
 import authRoutes from './routes/auth';
 import paymentRoutes from './routes/payment';
+import orderRoutes from './routes/order';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ mongoose
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/order', orderRoutes);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
