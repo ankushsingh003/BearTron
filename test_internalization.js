@@ -45,5 +45,5 @@ async function simulateInternalization() {
     }
 }
 
-// simulateInternalization();
+simulateInternalization();
 // Note: This requires both servers (5000 and 4000) to be running.

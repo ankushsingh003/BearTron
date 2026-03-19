@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BearTron | Internalization Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>BEARTRON <span style="font-weight: 400; font-size: 0.9rem; opacity: 0.7;">INTERNALIZATION</span></h1>
+            <div class="status-badge" id="status">Platform Online</div>
+        </header>
+
+        <main>
+            <section class="panel">
+                <h2>ORDER BOOK (Internal)</h2>
+                <div class="order-book">
+                    <div class="order-list bids" id="bids">
+                        <div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">No Bids</div>
+                    </div>
+                    <div class="order-list asks" id="asks">
+                        <div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">No Asks</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>INTERNAL TRADES (Settled)</h2>
+                <div class="trade-list" id="trades">
+                    <div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">Ready for matching...</div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="sidebar">
+            <div class="panel">
+                <h2>QUICK ORDER</h2>
+                <div class="input-group">
+                    <label>Symbol</label>
+                    <input type="text" id="symbol" value="AAPL">
+                </div>
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" id="qty" value="10">
+                </div>
+                <div class="input-group">
+                    <label>Price</label>
+                    <input type="number" id="price" value="150">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="buy" onclick="placeOrder('BUY')">BUY</button>
+                    <button class="sell" onclick="placeOrder('SELL')">SELL</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 0.75rem; color: var(--text-secondary);">
+                <p>This side-platform handles <strong>Internal Crossing</strong>. Offsetting orders are matched immediately before external routing.</p>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const symbol = 'AAPL';
+        
+        async function updateDashboard() {
+            // Update Order Book
+            const bookRes = await fetch(`/api/orderbook/${symbol}`);
+            const book = await bookRes.json();
+            
+            const bidsDiv = document.getElementById('bids');
+            const asksDiv = document.getElementById('asks');
+            
+            bidsDiv.innerHTML = book.buys.length ? '' : '<div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">No Bids</div>';
+            asksDiv.innerHTML = book.sells.length ? '' : '<div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">No Asks</div>';
+            
+            book.buys.forEach(o => {
+                bidsDiv.innerHTML += `<div class="order-row"><span>$${o.price}</span><span>${o.quantity - o.filledQuantity}</span></div>`;
+            });
+            
+            book.sells.forEach(o => {
+                asksDiv.innerHTML += `<div class="order-row"><span>$${o.price}</span><span>${o.quantity - o.filledQuantity}</span></div>`;
+            });
+
+            // Update Trades
+            const tradeRes = await fetch(`/api/trades/${symbol}`);
+            const trades = await tradeRes.json();
+            const tradesDiv = document.getElementById('trades');
+            
+            tradesDiv.innerHTML = trades.length ? '' : '<div style="text-align: center; opacity: 0.5; font-size: 0.8rem;">Ready for matching...</div>';
+            
+            trades.reverse().forEach(t => {
+                tradesDiv.innerHTML += `
+                    <div class="trade-row new-entry">
+                        <span>${t.symbol}</span>
+                        <span style="color: var(--bid-color)">+${t.quantity}</span>
+                        <span style="text-align: right">$${t.price}</span>
+                    </div>
+                `;
+            });
+        }
+
+        async function placeOrder(side) {
+            const symbolInput = document.getElementById('symbol').value;
+            const qty = parseFloat(document.getElementById('qty').value);
+            const price = parseFloat(document.getElementById('price').value);
+
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clientId: 'UI_USER',
+                    symbol: symbolInput,
+                    side: side,
+                    quantity: qty,
+                    price: price
+                })
+            });
+            
+            updateDashboard();
+        }
+
+        setInterval(updateDashboard, 2000);
+        updateDashboard();
+    </script>
+</body>
+</html>
