@@ -88,6 +88,10 @@ export default function SignInPage() {
           </Link>
           <h1 className="text-3xl font-bold mt-4">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">Sign in to your trading account</p>
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-400">
+            <p><strong>Debug Mode:</strong> Use test credentials if DB is down:</p>
+            <code>test@beartron.com</code> / <code>password123</code>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
